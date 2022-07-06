@@ -4,6 +4,34 @@ from django.db import models
 User = get_user_model()
 
 
+class Group(models.Model):
+    """Модель группы или сообщества"""
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True)
+    description = models.TextField()
+
+    class Meta:
+        ordering = ('title',)
+
+    def __str__(self):
+        return self.title()
+
+
+class Follow(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="follower")
+    following = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="following")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'following'],
+                name='unique_user_following'
+            )
+        ]
+
+
 class Post(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
@@ -11,6 +39,15 @@ class Post(models.Model):
         User, on_delete=models.CASCADE, related_name='posts')
     image = models.ImageField(
         upload_to='posts/', null=True, blank=True)
+    group = models.ForeignKey(
+        Group,
+        related_name='posts',
+        # при удалении группы, поле group в модели станет - None
+        on_delete=models.SET_NULL,
+        # проверка формы позволит внести пустое значение
+        blank=True,
+        # django будет хранить пустые значение в БД как NULL
+        null=True)
 
     def __str__(self):
         return self.text
