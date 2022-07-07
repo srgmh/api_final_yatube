@@ -42,12 +42,12 @@ class Post(models.Model):
     group = models.ForeignKey(
         Group,
         related_name='posts',
-        # при удалении группы, поле group в модели станет - None
         on_delete=models.SET_NULL,
-        # проверка формы позволит внести пустое значение
         blank=True,
-        # django будет хранить пустые значение в БД как NULL
         null=True)
+
+    class Meta:
+        ordering = ('pub_date',)
 
     def __str__(self):
         return self.text
